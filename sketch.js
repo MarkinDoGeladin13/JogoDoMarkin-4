@@ -4,14 +4,21 @@ var GCaixa, GEspinho, GPlataforma, GBinvisivel;
 var binvisivel;
 var plataforma1;
 var edges;
-var estadoJogo = JOGAR;
 var JOGAR = 1;
 var ENCERRAR = 0;
+var estadoJogo = JOGAR;
 var imgCaixa;
 var imgEspinho;
+var imgBackground;
 function preload(){
     imgCaixa = loadImage("JogoDoMarkin-main/freescifiplatform/png/Tiles/Tile (5).png")
     imgEspinho = loadImage("JogoDoMarkin-main/freescifiplatform/png/Tiles/Spike.png")
+    imgBackground = loadImage("JogoDoMarkin-main/JogoDoMarkin-bg.jpg")
+    imgPlataforma1 = loadImage("JogoDoMarkin-main/freescifiplatform/png/Tiles/Tile (15).png")
+    imgJogador = loadImage("JogoDoMarkin-main/freescifiplatform/png/Objects/Box.png")
+
+
+
 
 
 }
@@ -19,8 +26,12 @@ function setup() {
     canva = createCanvas(700, 300);
     
     jogador = createSprite(50,50,25,25);
+    jogador.addImage(imgJogador);
+    jogador.scale = 0.1;
     edges = createEdgeSprites();
-    plataforma1 = createSprite(50,75,100,25);
+    plataforma1 = createSprite(50,125,100,25);
+    plataforma1.addImage(imgPlataforma1);
+    plataforma1.scale = 0.5;
     GCaixa = createGroup();
     GPlataforma = createGroup();
     GEspinho = createGroup();
@@ -30,10 +41,36 @@ function setup() {
 
 }
     function draw(){
-    background("green");
+    background(imgBackground);
+    drawSprites();
+    if(estadoJogo === JOGAR){
+         gerarCaixas();
+         gerarEspinho();
+        
+        if(jogador.isTouching(GBinvisivel)||jogador.collide(GEspinho)){
+            estadoJogo = ENCERRAR;
+        }
+
+    }
+    else if(estadoJogo === ENCERRAR){
+         GCaixa.destroyEach();
+         GEspinho.destroyEach();
+         GBinvisivel.destroyEach();
+         plataforma1.visible = false;
+         textSize(20);
+         fill("red");
+         text("GAME OVER, pressione R para reiniciar", 225, 150);
+         
+         if(keyDown("r")){
+            estadoJogo = JOGAR;
+            plataforma1.visible = true;
+            jogador.x = 50;
+            jogador.y = 50;
+        }
+    }
     jogador.collide(plataforma1);
     jogador.collide(GCaixa);
-    
+    console.log("estado jogo é "+ estadoJogo)
     if(keyDown("space")){
         pular();
     }
@@ -44,35 +81,10 @@ function setup() {
     if(keyDown(LEFT_ARROW)){
        jogador.x = jogador.x-5;
     }
-    if(estadoJogo === JOGAR){
-         gerarCaixas();
-         gerarPlataforma();
-         gerarEspinho();
-         
-        if(jogador.collide(edges[3])){
-            estadoJogo = ENCERRAR;
-        }
-        if(jogador.isTouching(binvisivel)){
-            estadoJogo = ENCERRAR;
-        }
-    }
-    else if(estadoJogo === ENCERRAR){
-         GCaixas.destroyEach();
-         GPlataforma.destroyEach();
-         GEspinho.destroyEach();
-         binvisivel.destroyEach();
-         textSize(100,20);
-         text("GAME OVER, pressione R para reiniciar", 350, 150);
-         if(keyDown("r")){
-            estadoJogo = JOGAR;
-      }
-    }
     
-    
-    gerarCaixas();
     jogador.velocityY = jogador.velocityY+0.5;
     
-    drawSprites();
+    
     
 
 }
@@ -82,7 +94,7 @@ function setup() {
             GCaixa.add(caixa);
             caixa.y = Math.round(random(250,150));
             caixa.velocityX = -5;
-            GCaixa.lifetime=200;
+            GCaixa.lifetime = 200;
             caixa.addImage(imgCaixa);
             caixa.scale = 0.3;
             binvisivel = createSprite(200,200,100,20);
@@ -90,33 +102,25 @@ function setup() {
             binvisivel.y = caixa.y+15;
             binvisivel.velocityX = -5
             binvisivel.visible = false;
+            binvisivel.lifetime = 200;
             GBinvisivel.add(binvisivel);
+            
         }
     } 
-    function gerarPlataforma(){
-        if(frameCount % 30 === 0){
-            var plataforma = createSprite(700,300,50,50);
-            GPlataforma.add(plataforma);
-            plataforma.y = Math.round(random(250,150));
-            plataforma.velocityX = -5;
-            GPlataforma.lifetime=200;
+    function gerarEspinho(){
+        if (frameCount % 25 === 0){
+            var espinho = createSprite(725,260,50,50);
+            GEspinho.add(espinho);
+            espinho.velocityX = -3;
+            GEspinho.lifetime=200;
+            espinho.addImage(imgEspinho);
+            espinho.scale = 0.3;
         }
-      }
+    }     
+      
     function pular(){
         if(keyDown("space")){
             jogador.velocityY = jogador.velocityY-5;
             jogador.y = jogador.y-2;
         }
     }
-    function gerarEspinho(){
-        if(frameCount % 3 === 0){    
-            var espinho = createSprite(700,250,25,25);
-            espinho.velocityX = -5;
-            espinho.addImage(imgEspinho);
-            GEspinho.add(espinho);
-            espinho.lifetime=200;
-            
-        }
-    }
-    
-    
